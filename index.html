@@ -1,0 +1,2968 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preparatoria La Galaxia del Saber | Exploración 3D</title>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --cyan:#20dcff;
+  --blue:#087fb8;
+  --navy:#06182c;
+  --panel:rgba(3,17,34,.96);
+  --border:rgba(32,220,255,.45);
+  --white:#f3fbff;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html,body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#020916;
+  color:var(--white);
+  font-family:Montserrat,Arial,sans-serif;
+}
+
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid white;outline-offset:2px}
+.hidden{display:none!important}
+
+.screen{
+  position:absolute;
+  inset:0;
+  display:none;
+  overflow:hidden;
+}
+
+.screen.active{display:block}
+
+#app{
+  position:fixed;
+  inset:0;
+  background:#020916;
+  overflow:hidden;
+}
+
+/* INTRO */
+
+#intro{background:#020716}
+
+#spaceCanvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+.space-overlay{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 35%,#020817aa 100%);
+}
+
+.stars{
+  position:absolute;
+  inset:-100%;
+  pointer-events:none;
+  background-image:
+    radial-gradient(2px 2px at 10% 20%,#fff,transparent),
+    radial-gradient(2px 2px at 50% 60%,#9beaff,transparent),
+    radial-gradient(1px 1px at 80% 30%,#fff,transparent),
+    radial-gradient(2px 2px at 30% 85%,#b8dfff,transparent);
+  background-size:190px 190px;
+  animation:starMove 40s linear infinite;
+}
+
+@keyframes starMove{to{transform:translateY(500px)}}
+
+.intro-header{
+  position:absolute;
+  top:7%;
+  left:0;
+  width:100%;
+  text-align:center;
+  z-index:4;
+  padding:15px;
+  text-shadow:0 0 25px #009fff;
+}
+
+.intro-header small{
+  letter-spacing:5px;
+  color:#8cecff;
+  font-weight:800;
+  font-size:11px;
+}
+
+.intro-header h1{
+  font-family:Orbitron,sans-serif;
+  font-size:clamp(25px,5vw,64px);
+  margin:15px 0;
+  color:#fff;
+  text-shadow:0 0 12px #fff,0 0 32px #00cfff,0 0 65px #008cff;
+}
+
+.intro-header p{
+  font-size:11px;
+  letter-spacing:5px;
+  color:#b6eaff;
+}
+
+#introDialogue{
+  position:absolute;
+  z-index:5;
+  bottom:100px;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(720px,90%);
+  text-align:center;
+  padding:16px 20px;
+  background:#03182fe8;
+  border:1px solid #2adfff77;
+  border-radius:12px;
+  line-height:1.7;
+  font-size:12px;
+  box-shadow:0 0 35px #00aaff25;
+}
+
+#introDialogue strong{
+  display:block;
+  color:#75eaff;
+  letter-spacing:3px;
+  margin-bottom:5px;
+}
+
+.primary{
+  padding:14px 26px;
+  border:1px solid #a7f5ff;
+  border-radius:7px;
+  color:#001321;
+  font-weight:900;
+  letter-spacing:1.5px;
+  background:linear-gradient(110deg,#b9f8ff,#21cfff,#078ed1);
+  box-shadow:0 0 28px #00cfff88;
+  transition:.2s;
+}
+
+.primary:hover{
+  filter:brightness(1.18);
+  transform:translateY(-2px);
+}
+
+#startJourney{
+  position:absolute;
+  z-index:7;
+  bottom:25px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+/* TLAXCO */
+
+#town{background:#102c3c}
+
+#townPhoto{
+  position:absolute;
+  inset:0;
+  background-position:center;
+  background-size:cover;
+  background-image:
+    linear-gradient(#06182722,#03132166),
+    url("img/tlaxco.jpg");
+  transform:scale(1.03);
+}
+
+.town-shade{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(#071d3544,#04132477);
+}
+
+.town-heading{
+  position:absolute;
+  z-index:4;
+  top:8%;
+  left:0;
+  width:100%;
+  text-align:center;
+  text-shadow:0 3px 20px #00101d;
+}
+
+.town-heading h2{
+  font:800 clamp(25px,4.5vw,54px) Orbitron;
+  color:white;
+}
+
+.town-heading p{
+  margin-top:12px;
+  letter-spacing:4px;
+  font-size:11px;
+}
+
+#townShip{
+  position:absolute;
+  z-index:5;
+  left:50%;
+  top:-35%;
+  width:220px;
+  height:150px;
+  transform:translateX(-50%);
+  opacity:0;
+}
+
+#townShip.land{
+  animation:shipLanding 8s cubic-bezier(.18,.65,.25,1) forwards;
+}
+
+@keyframes shipLanding{
+  0%{top:-35%;opacity:0;transform:translateX(-50%) scale(.25) rotate(-12deg)}
+  12%{opacity:1}
+  48%{top:25%;transform:translateX(-50%) scale(.8) rotate(4deg)}
+  78%{top:48%;transform:translateX(-50%) scale(1.12)}
+  100%{top:53%;opacity:1;transform:translateX(-50%) scale(1.1)}
+}
+
+.ship-engine{
+  position:absolute;
+  left:15%;
+  bottom:0;
+  width:70%;
+  height:30px;
+  background:linear-gradient(90deg,transparent,#28dfff,#fff,#28dfff,transparent);
+  filter:blur(13px);
+  animation:engine .25s infinite alternate;
+}
+
+@keyframes engine{to{opacity:.35;transform:scaleX(.7)}}
+
+.ship-base{
+  position:absolute;
+  left:5%;
+  bottom:18px;
+  width:90%;
+  height:62px;
+  border-radius:50%;
+  background:linear-gradient(#faffff,#b3cbd9 48%,#526c83);
+  border:3px solid white;
+  box-shadow:0 0 35px #54eaff;
+}
+
+.ship-window{
+  position:absolute;
+  z-index:2;
+  top:0;
+  left:31%;
+  width:38%;
+  height:68px;
+  border-radius:50% 50% 25% 25%;
+  background:linear-gradient(120deg,#e9ffff,#2385b9 65%,#082e55);
+  border:3px solid #d9fbff;
+}
+
+.ship-alien{
+  position:absolute;
+  z-index:3;
+  left:39%;
+  top:-21px;
+  font-size:53px;
+  filter:drop-shadow(0 0 13px #74ffae);
+  animation:alienFloat 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes alienFloat{
+  to{transform:translateY(-9px) rotate(5deg)}
+}
+
+#townMessage{
+  position:absolute;
+  z-index:6;
+  bottom:90px;
+  left:0;
+  right:0;
+  text-align:center;
+  letter-spacing:2px;
+  font-size:12px;
+  text-shadow:0 2px 12px #000;
+}
+
+#enterSchool{
+  display:none;
+  position:absolute;
+  z-index:7;
+  bottom:25px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+/* EXPLORADOR */
+
+#explorer{background:#a8cbd9}
+
+#schoolCanvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  z-index:1;
+}
+
+#loading{
+  position:absolute;
+  inset:0;
+  z-index:100;
+  background:#06182b;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:15px;
+  font:700 12px Orbitron;
+  letter-spacing:3px;
+}
+
+.spinner{
+  width:45px;
+  height:45px;
+  border-radius:50%;
+  border:3px solid #19415b;
+  border-top-color:#28dcff;
+  animation:spin .7s linear infinite;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#topbar{
+  position:absolute;
+  z-index:30;
+  top:0;
+  left:0;
+  right:0;
+  min-height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:7px 16px;
+  background:#031327f2;
+  border-bottom:1px solid var(--border);
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+
+.brand img{
+  width:44px;
+  height:44px;
+  object-fit:contain;
+}
+
+.brand-title{
+  font:800 11px Orbitron;
+  letter-spacing:1px;
+}
+
+.brand-title span{
+  display:block;
+  margin-top:5px;
+  color:#72eaff;
+  font-size:9px;
+}
+
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.top-button{
+  padding:10px 13px;
+  border:1px solid #32dfff;
+  border-radius:6px;
+  color:#eafaff;
+  background:linear-gradient(120deg,#075b7e,#06314f);
+  font:800 9px Montserrat;
+  letter-spacing:.5px;
+  box-shadow:0 0 14px #00cfff25;
+}
+
+.top-button:hover{
+  background:#087ba5;
+}
+
+#topStatus{
+  font:600 9px Orbitron;
+  color:#aeeeff;
+  letter-spacing:1px;
+  text-align:right;
+}
+
+.panel{
+  position:absolute;
+  z-index:20;
+  top:75px;
+  bottom:12px;
+  overflow-y:auto;
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:var(--panel);
+  box-shadow:0 7px 30px #00101b55;
+  scrollbar-width:thin;
+  scrollbar-color:#168eb5 #07182b;
+}
+
+#leftPanel{left:12px;width:245px}
+
+#rightPanel{
+  right:12px;
+  width:255px;
+  max-height:54vh;
+  bottom:auto;
+}
+
+.panel-title{
+  font:700 10px Orbitron;
+  color:#76eaff;
+  letter-spacing:2px;
+  margin:12px 0 8px;
+}
+
+.panel-description{
+  font-size:9px;
+  line-height:1.7;
+  color:#b3d1e1;
+  margin-bottom:8px;
+}
+
+.control{
+  display:block;
+  width:100%;
+  padding:9px 10px;
+  margin:4px 0;
+  border:1px solid #254b67;
+  border-radius:5px;
+  background:#102b46;
+  color:#e9f8ff;
+  text-align:left;
+  font-size:9px;
+  font-weight:700;
+  transition:background .12s,border-color .12s;
+}
+
+.control:hover,.control.active{
+  background:#075b7e;
+  border-color:#32dfff;
+}
+
+.control.primary-control{
+  background:linear-gradient(110deg,#087ba5,#06466d);
+  border-color:#49e4ff;
+  color:white;
+  text-align:center;
+  font-weight:900;
+}
+
+.floor-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+}
+
+.floor-grid .control{text-align:center}
+
+#rightPanel h2{
+  font:800 13px Orbitron;
+  color:#7ceaff;
+  margin-bottom:10px;
+}
+
+#rightPanel p{
+  font-size:10px;
+  line-height:1.8;
+  color:#d1e9f5;
+  margin:5px 0;
+}
+
+.hint{
+  margin-top:10px;
+  padding:10px;
+  background:#00bce51c;
+  border:1px solid #00cfff33;
+  border-radius:6px;
+}
+
+#roomMenu{
+  max-height:230px;
+  overflow:auto;
+  padding-right:3px;
+}
+
+#roomMenu .control{font-size:9px}
+
+#bottomBar{
+  position:absolute;
+  z-index:20;
+  left:265px;
+  right:275px;
+  bottom:12px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:5px;
+}
+
+#bottomBar button,#musicButton{
+  color:white;
+  background:#031327ef;
+  border:1px solid #168eb5;
+  border-radius:5px;
+  padding:9px 11px;
+  font-size:9px;
+  font-weight:800;
+}
+
+#bottomBar button:hover,#musicButton:hover{background:#075b7e}
+
+#musicButton{
+  position:absolute;
+  z-index:22;
+  right:280px;
+  top:75px;
+}
+
+#status{
+  position:absolute;
+  z-index:20;
+  right:12px;
+  bottom:12px;
+  max-width:255px;
+  padding:9px 12px;
+  border-radius:6px;
+  border:1px solid #168eb5;
+  background:#031327ef;
+  color:#c5f4ff;
+  font-size:9px;
+  line-height:1.6;
+}
+
+#walkHelp{
+  display:none;
+  position:absolute;
+  z-index:22;
+  top:72px;
+  left:50%;
+  transform:translateX(-50%);
+  white-space:nowrap;
+  background:#031327ee;
+  border:1px solid #27dfff;
+  border-radius:6px;
+  padding:9px 14px;
+  font-size:9px;
+  font-weight:800;
+}
+
+#crosshair{
+  display:none;
+  position:absolute;
+  z-index:21;
+  top:50%;
+  left:50%;
+  width:12px;
+  height:12px;
+  border:1px solid white;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  box-shadow:0 0 6px #00bfff;
+}
+
+@media(max-width:850px){
+  #leftPanel{width:185px;padding:8px}
+  #rightPanel{width:190px;top:auto;bottom:105px;max-height:28vh}
+  #bottomBar{left:195px;right:10px}
+  #musicButton{right:12px;top:70px}
+  #status{display:none}
+  #topStatus{display:none}
+  .top-button{font-size:8px;padding:9px}
+}
+
+@media(max-width:560px){
+  #topbar{padding:6px 8px}
+  .brand img{width:34px;height:34px}
+  .brand-title{font-size:8px}
+  .brand-title span{font-size:7px}
+  .top-actions{gap:4px}
+  .top-button{padding:8px 7px;font-size:7px}
+  #leftPanel{top:65px;width:150px;bottom:8px}
+  #rightPanel{right:8px;width:165px;bottom:85px}
+  #bottomBar{left:158px;right:8px;bottom:8px}
+  #bottomBar button{padding:7px;font-size:7px}
+  #musicButton{right:8px;top:112px}
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+
+<section id="intro" class="screen active">
+  <canvas id="spaceCanvas"></canvas>
+  <div class="stars"></div>
+  <div class="space-overlay"></div>
+
+  <div class="intro-header">
+    <small>EXPERIENCIA EDUCATIVA INTERACTIVA</small>
+    <h1>LA GALAXIA DEL SABER</h1>
+    <p>UN VIAJE HACIA NUESTRA ESCUELA</p>
+  </div>
+
+  <div id="introDialogue">
+    <strong>MENSAJE DE LA MISIÓN</strong>
+    Prepárate para viajar por el espacio y descubrir un lugar donde comienza el conocimiento.
+  </div>
+
+  <button class="primary" id="startJourney">🚀 INICIAR VIAJE</button>
+</section>
+
+<section id="town" class="screen">
+  <div id="townPhoto"></div>
+  <div class="town-shade"></div>
+
+  <div class="town-heading">
+    <h2>BIENVENIDOS A TLAXCO</h2>
+    <p>DESTINO ALCANZADO · PREPARANDO ATERRIZAJE</p>
+  </div>
+
+  <div id="townShip">
+    <div class="ship-engine"></div>
+    <div class="ship-alien">👽</div>
+    <div class="ship-window"></div>
+    <div class="ship-base"></div>
+  </div>
+
+  <div id="townMessage">LA NAVE SE APROXIMA A NUESTRA COMUNIDAD...</div>
+  <button class="primary" id="enterSchool">✦ EXPLORAR LA ESCUELA ✦</button>
+</section>
+
+<section id="explorer" class="screen">
+
+  <div id="loading">
+    <div class="spinner"></div>
+    CONSTRUYENDO LA GALAXIA DEL SABER...
+  </div>
+
+  <header id="topbar">
+    <div class="brand">
+      <img id="schoolLogo" src="img/541689ed-143c-4855-9b29-9d24265e0b9c.jpg" alt="Logo de la escuela">
+      <div class="brand-title">
+        PREPARATORIA
+        <span>LA GALAXIA DEL SABER</span>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <div id="topStatus">VISTA GENERAL · CUATRO PLANTAS</div>
+      <button class="top-button" id="topOverview">⌂ VISTA GENERAL</button>
+    </div>
+  </header>
+
+  <aside id="leftPanel" class="panel">
+
+    <div class="panel-title">NAVEGACIÓN POR PLANTAS</div>
+    <p class="panel-description">Selecciona un nivel para explorar sus instalaciones.</p>
+
+    <div class="floor-grid">
+      <button class="control" data-floor="0">PLANTA 1</button>
+      <button class="control" data-floor="1">PLANTA 2</button>
+      <button class="control" data-floor="2">PLANTA 3</button>
+      <button class="control" data-floor="3">PLANTA 4</button>
+    </div>
+
+    <div class="panel-title">VISTA DEL EDIFICIO</div>
+    <button class="control primary-control" id="overviewButton">⌂ VISTA GENERAL DEL EDIFICIO</button>
+
+    <div class="panel-title">ESPACIOS ESCOLARES</div>
+    <div id="roomMenu"></div>
+
+    <div class="panel-title">MODO DE EXPLORACIÓN</div>
+    <button class="control" id="walkButton">🎮 RECORRER EN PRIMERA PERSONA</button>
+    <button class="control" id="exitWalkButton">SALIR DEL RECORRIDO</button>
+
+    <div class="panel-title">ESTRUCTURA</div>
+    <button class="control" id="roofButton">OCULTAR / MOSTRAR TECHOS</button>
+    <button class="control" id="labelsButton">MOSTRAR / OCULTAR NOMBRES</button>
+    <button class="control" id="separateButton">SEPARAR LAS PLANTAS</button>
+    <button class="control" id="joinButton">UNIR LAS PLANTAS</button>
+
+  </aside>
+
+  <aside id="rightPanel" class="panel">
+    <h2 id="roomTitle">VISTA GENERAL</h2>
+    <p id="roomDescription">
+      Explora la estructura completa de la escuela. Selecciona cualquier espacio para acercarte y conocerlo.
+    </p>
+
+    <div class="hint">
+      <p><strong>CONTROLES DE RECORRIDO</strong></p>
+      <p>W A S D o flechas: caminar</p>
+      <p>Mouse: mirar alrededor</p>
+      <p>Shift: correr</p>
+      <p>Espacio: saltar</p>
+      <p>E: abrir / cerrar puerta</p>
+      <p>F: utilizar escaleras</p>
+      <p>ESC: liberar el mouse</p>
+      <p>R: vista general</p>
+    </div>
+  </aside>
+
+  <button id="musicButton">♫ PAUSAR MÚSICA</button>
+  <div id="walkHelp">WASD / FLECHAS · MOUSE · SHIFT · ESPACIO · E PUERTA · F ESCALERA · ESC SALIR</div>
+  <div id="crosshair"></div>
+
+  <div id="bottomBar">
+    <button id="zoomIn">＋ ACERCAR</button>
+    <button id="zoomOut">－ ALEJAR</button>
+    <button id="rotateLeft">↶ GIRAR IZQUIERDA</button>
+    <button id="rotateRight">↷ GIRAR DERECHA</button>
+    <button id="resetCamera">⌂ RESTABLECER</button>
+  </div>
+
+  <div id="status">Selecciona un espacio para comenzar.</div>
+  <canvas id="schoolCanvas"></canvas>
+
+</section>
+</div>
+
+<!--
+  AUDIO DE INTERNET:
+  Viaje: Brenticus - Ambient (CC BY 3.0).
+  Ambiente educativo: Promise.ogg (dominio público).
+  El audio de Tlaxco se mantiene local y lo agregas tú.
+-->
+
+<audio id="travelAudio"
+  src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Brenticus_-_Ambient.ogg"
+  preload="auto"></audio>
+
+<audio id="townAudio"
+  src="img/Mi Tlaxco Tlaxcala.mp4"
+  preload="auto"></audio>
+
+<audio id="schoolAudio"
+  src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Promise.ogg"
+  preload="auto"
+  loop></audio>
+
+<script type="module">
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {PointerLockControls} from "three/addons/controls/PointerLockControls.js";
+
+/* CONFIGURACIÓN DE ARCHIVOS Y ESCUELA */
+
+const CONFIG={
+  logo:"img/541689ed-143c-4855-9b29-9d24265e0b9c.jpg",
+  townImage:"img/Tlaxco-en-Tlaxcala-1024x575.png",
+  townAudio:"img/Mi Tlaxco Tlaxcala.mp4",
+  floorHeight:4.2,
+  walkSpeed:5.2,
+  runSpeed:8.5,
+  gravity:19,
+  jumpSpeed:7.2,
+  maxPixelRatio:1.5
+};
+
+const $=id=>document.getElementById(id);
+
+$("schoolLogo").src=CONFIG.logo;
+$("townPhoto").style.backgroundImage=
+`linear-gradient(#07182722,#03132166),url("${CONFIG.townImage}")`;
+
+/* AUDIO */
+
+const audios=[
+  $("travelAudio"),
+  $("townAudio"),
+  $("schoolAudio")
+];
+
+function stopAudio(){
+  audios.forEach(a=>{
+    a.pause();
+    try{a.currentTime=0}catch(e){}
+  });
+}
+
+async function playAudio(audio,loop=false){
+  stopAudio();
+  audio.loop=loop;
+  audio.volume=.55;
+
+  try{
+    await audio.play();
+  }catch(error){
+    console.warn("El navegador no permitió iniciar el audio:",error);
+  }
+}
+
+/* DIÁLOGOS DEL MARCIANITO: SOLO EN EL VIAJE */
+
+function speak(text,rate=1){
+  if(!("speechSynthesis" in window))return;
+
+  speechSynthesis.cancel();
+
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang="es-MX";
+  u.rate=rate;
+  u.pitch=1.05;
+
+  const voices=speechSynthesis.getVoices();
+
+  const voice=
+    voices.find(v=>v.lang.toLowerCase()==="es-mx")||
+    voices.find(v=>v.lang.toLowerCase().startsWith("es"));
+
+  if(voice)u.voice=voice;
+
+  speechSynthesis.speak(u);
+}
+
+/* INTRO ESPACIAL */
+
+let introRenderer,introScene,introCamera,introEarth;
+let introClouds,introStars,introShip;
+let introFrame=0;
+
+const earthGroup=new THREE.Group();
+
+function createIntro(){
+
+  const canvas=$("spaceCanvas");
+
+  introScene=new THREE.Scene();
+  introScene.background=new THREE.Color(0x020716);
+
+  introCamera=new THREE.PerspectiveCamera(
+    45,innerWidth/innerHeight,.1,300
+  );
+
+  introCamera.position.set(0,0,12);
+
+  introRenderer=new THREE.WebGLRenderer({
+    canvas,
+    antialias:true,
+    powerPreference:"high-performance"
+  });
+
+  introRenderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+  introRenderer.setSize(innerWidth,innerHeight);
+  introRenderer.outputColorSpace=THREE.SRGBColorSpace;
+
+  const starGeo=new THREE.BufferGeometry();
+  const starPositions=[];
+
+  for(let i=0;i<1600;i++){
+    const r=75;
+    const theta=Math.random()*Math.PI*2;
+    const phi=Math.acos(2*Math.random()-1);
+
+    starPositions.push(
+      r*Math.sin(phi)*Math.cos(theta),
+      r*Math.cos(phi),
+      r*Math.sin(phi)*Math.sin(theta)
+    );
+  }
+
+  starGeo.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(starPositions,3)
+  );
+
+  introStars=new THREE.Points(
+    starGeo,
+    new THREE.PointsMaterial({
+      color:0xffffff,
+      size:.16,
+      sizeAttenuation:true
+    })
+  );
+
+  introScene.add(introStars);
+  introScene.add(new THREE.AmbientLight(0x9cbfff,.7));
+
+  const sun=new THREE.DirectionalLight(0xffffff,3.2);
+  sun.position.set(-7,4,8);
+  introScene.add(sun);
+
+  earthGroup.position.set(0,-.4,-2);
+  introScene.add(earthGroup);
+
+  const textureLoader=new THREE.TextureLoader();
+
+  const earthTexture=textureLoader.load(
+    "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg"
+  );
+
+  earthTexture.colorSpace=THREE.SRGBColorSpace;
+
+  introEarth=new THREE.Mesh(
+    new THREE.SphereGeometry(2.65,64,64),
+    new THREE.MeshStandardMaterial({
+      map:earthTexture,
+      roughness:1
+    })
+  );
+
+  earthGroup.add(introEarth);
+
+  const cloudTexture=textureLoader.load(
+    "https://threejs.org/examples/textures/planets/earth_clouds_1024.png"
+  );
+
+  cloudTexture.colorSpace=THREE.SRGBColorSpace;
+
+  introClouds=new THREE.Mesh(
+    new THREE.SphereGeometry(2.69,56,56),
+    new THREE.MeshStandardMaterial({
+      map:cloudTexture,
+      transparent:true,
+      opacity:.34,
+      depthWrite:false
+    })
+  );
+
+  earthGroup.add(introClouds);
+
+  const atmosphere=new THREE.Mesh(
+    new THREE.SphereGeometry(2.83,56,56),
+    new THREE.MeshBasicMaterial({
+      color:0x25bfff,
+      transparent:true,
+      opacity:.15,
+      side:THREE.BackSide
+    })
+  );
+
+  earthGroup.add(atmosphere);
+
+  introShip=new THREE.Group();
+  introScene.add(introShip);
+
+  const hull=new THREE.Mesh(
+    new THREE.SphereGeometry(.62,24,16),
+    new THREE.MeshStandardMaterial({
+      color:0xd9f7ff,
+      metalness:.75,
+      roughness:.2,
+      emissive:0x06466a,
+      emissiveIntensity:.4
+    })
+  );
+
+  hull.scale.set(1.55,.38,1);
+  introShip.add(hull);
+
+  const dome=new THREE.Mesh(
+    new THREE.SphereGeometry(.3,20,16),
+    new THREE.MeshPhysicalMaterial({
+      color:0x63dfff,
+      metalness:.2,
+      roughness:.08,
+      transparent:true,
+      opacity:.85,
+      clearcoat:1
+    })
+  );
+
+  dome.position.y=.24;
+  dome.scale.set(1,.75,1);
+  introShip.add(dome);
+
+  const ring=new THREE.Mesh(
+    new THREE.TorusGeometry(.8,.07,10,40),
+    new THREE.MeshStandardMaterial({
+      color:0x9eeeff,
+      metalness:.7,
+      roughness:.2,
+      emissive:0x078bd1,
+      emissiveIntensity:1
+    })
+  );
+
+  ring.rotation.x=Math.PI/2;
+  introShip.add(ring);
+
+  const glow=new THREE.PointLight(0x20cfff,3,5);
+  introShip.add(glow);
+
+  introShip.position.set(4.5,-1.8,3);
+
+  introLoop();
+}
+
+function introLoop(){
+
+  if(!$("intro").classList.contains("active"))return;
+
+  introFrame=requestAnimationFrame(introLoop);
+
+  const t=performance.now()*.001;
+
+  earthGroup.rotation.y=t*.12;
+  introClouds.rotation.y=-t*.08;
+  introStars.rotation.y=t*.006;
+
+  introShip.position.x=4.5+Math.sin(t*.45)*.4;
+  introShip.position.y=-1.8+Math.sin(t*.8)*.2;
+  introShip.rotation.y=t*.25;
+
+  introRenderer.render(introScene,introCamera);
+}
+
+/* VIAJE */
+
+let journeyRunning=false;
+
+function startJourney(){
+
+  if(journeyRunning)return;
+
+  journeyRunning=true;
+  $("startJourney").disabled=true;
+
+  $("introDialogue").innerHTML=
+    "<strong>INICIANDO VIAJE</strong>La nave está despegando. Nuestro destino es el planeta Tierra.";
+
+  playAudio($("travelAudio"));
+  speak(
+    "¡Hola, explorador! Soy tu compañero de viaje. Estamos a punto de iniciar una misión muy especial. Viajaremos hasta el planeta Tierra y llegaremos a Tlaxco, donde conoceremos nuestra escuela.",
+    .96
+  );
+
+  const start=performance.now();
+  const duration=13500;
+
+  function approach(now){
+
+    if(!$("intro").classList.contains("active"))return;
+
+    const p=Math.min((now-start)/duration,1);
+    const ease=p*p*(3-2*p);
+
+    introCamera.position.z=12-7.3*ease;
+    introCamera.position.x=1.5*ease;
+
+    introShip.position.lerpVectors(
+      new THREE.Vector3(4.5,-1.8,3),
+      new THREE.Vector3(1.8,-.4,2.8),
+      ease
+    );
+
+    if(p<1)requestAnimationFrame(approach);
+  }
+
+  requestAnimationFrame(approach);
+
+  setTimeout(()=>{
+
+    if(!$("intro").classList.contains("active"))return;
+
+    speechSynthesis.cancel();
+    stopAudio();
+
+    $("intro").classList.remove("active");
+    $("town").classList.add("active");
+
+    $("townShip").classList.add("land");
+
+    playAudio($("townAudio"));
+
+    $("townMessage").textContent="DESCENDIENDO SOBRE TLAXCO...";
+
+    speak(
+      "Hemos llegado a Tlaxco. Observa nuestro destino. El aterrizaje está completo. Ahora vamos a conocer la Preparatoria La Galaxia del Saber.",
+      .96
+    );
+
+  },14000);
+
+  setTimeout(()=>{
+
+    if(!$("town").classList.contains("active"))return;
+
+    $("townMessage").textContent=
+      "ATERRIZAJE COMPLETADO · DESTINO ALCANZADO";
+
+    $("enterSchool").style.display="block";
+
+  },22000);
+}
+
+$("startJourney").addEventListener("click",startJourney);
+
+/* DISTRIBUCIÓN DE LOS CUATRO PISOS */
+
+const plans=[
+
+  [
+    ["1° A",-8,-6,"class"],
+    ["1° B",0,-6,"class"],
+    ["1° C",8,-6,"class"],
+    ["DIRECCIÓN",-8,7,"office"],
+    ["CONTROL ESCOLAR",0,7,"office"],
+    ["ORIENTACIÓN",8,7,"office"],
+    ["CAFETERÍA",17,0,"food"],
+    ["COMEDOR",-17,0,"food"],
+    ["VIGILANCIA",-17,-7,"office"],
+    ["BODEGA DEPORTIVA",-17,7,"storage"],
+    ["BAÑOS",17,10,"bath"]
+  ],
+
+  [
+    ["2° A",-8,-6,"class"],
+    ["2° B",0,-6,"class"],
+    ["2° C",8,-6,"class"],
+    ["BIBLIOTECA",-8,7,"library"],
+    ["LABORATORIO DE CÓMPUTO",0,7,"computer"],
+    ["ENFERMERÍA",8,7,"office"],
+    ["BAÑOS",17,7,"bath"]
+  ],
+
+  [
+    ["3° A",-8,-6,"class"],
+    ["3° B",0,-6,"class"],
+    ["3° C",8,-6,"class"],
+    ["LABORATORIO DE CIENCIAS",-8,7,"lab"],
+    ["CONTABILIDAD",0,7,"office"],
+    ["MICROBIOLOGÍA",8,7,"lab"],
+    ["BAÑOS",17,7,"bath"]
+  ],
+
+  [
+    ["BOXEO",0,-6,"gym"],
+    ["GIMNASIO",0,7,"gym"],
+    ["VESTIDORES",14,7,"office"],
+    ["BAÑOS",-14,7,"bath"]
+  ]
+
+];
+
+const descriptions={
+  class:"Aula de clases equipada con mobiliario escolar para el desarrollo de actividades académicas, trabajo colaborativo y aprendizaje.",
+  office:"Área administrativa de la institución, destinada a la organización, atención y gestión de actividades escolares.",
+  food:"Área de alimentación y convivencia para la comunidad escolar.",
+  library:"Espacio de lectura, consulta, investigación y aprendizaje autónomo.",
+  computer:"Laboratorio de cómputo equipado para actividades digitales, investigación y aprendizaje tecnológico.",
+  lab:"Laboratorio para prácticas, experimentación, observación e investigación.",
+  bath:"Área de servicios sanitarios para la comunidad escolar.",
+  gym:"Espacio para actividades físicas, entrenamiento, ejercicio y convivencia.",
+  storage:"Bodega para guardar balones, redes, conos, colchonetas y material deportivo de la escuela.",
+  court:"Cancha deportiva exterior de la planta baja, acondicionada para actividades físicas, basquetbol y futbol."
+};
+
+/* ESTADO */
+
+let scene,camera,renderer,orbit,pointer,clock;
+
+let initialized=false;
+let walkMode=false;
+let currentFloor=0;
+let selectedRoom=null;
+let roofsVisible=true;
+let labelsVisible=true;
+let separated=false;
+
+let schoolFrame=0;
+
+const floorGroups=[];
+const roomObjects=[];
+const doors=[];
+const labels=[];
+const roofMeshes=[];
+const wallColliders=[];
+const keys={};
+
+const raycaster=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+
+let verticalVelocity=0;
+let onGround=true;
+
+/* MATERIALES */
+
+const mat={
+  floor:new THREE.MeshStandardMaterial({color:0xc8cdd0,roughness:.88}),
+  wall:new THREE.MeshStandardMaterial({color:0xe9e7df,roughness:.9}),
+  red:new THREE.MeshStandardMaterial({color:0x9c4c43,roughness:.8}),
+  roof:new THREE.MeshStandardMaterial({color:0x526d83,roughness:.85}),
+  wood:new THREE.MeshStandardMaterial({color:0x865a38,roughness:.8}),
+  desk:new THREE.MeshStandardMaterial({color:0xb88d5b,roughness:.8}),
+  metal:new THREE.MeshStandardMaterial({color:0x879ca8,metalness:.65,roughness:.35}),
+  glass:new THREE.MeshStandardMaterial({
+    color:0x4eb9dc,metalness:.25,roughness:.2,
+    transparent:true,opacity:.75
+  }),
+  board:new THREE.MeshStandardMaterial({color:0x1c5944,roughness:.9}),
+  white:new THREE.MeshStandardMaterial({color:0xf5f4ed}),
+  dark:new THREE.MeshStandardMaterial({color:0x273b4d}),
+  green:new THREE.MeshStandardMaterial({color:0x4d8656}),
+  redChair:new THREE.MeshStandardMaterial({color:0x9e3d37}),
+  blue:new THREE.MeshStandardMaterial({color:0x24668d}),
+  black:new THREE.MeshStandardMaterial({color:0x17232d}),
+  yellow:new THREE.MeshStandardMaterial({color:0xe5b43c}),
+  light:new THREE.MeshStandardMaterial({
+    color:0xffffff,emissive:0x9beeff,emissiveIntensity:.65
+  })
+};
+
+/* HERRAMIENTAS 3D */
+
+function box(parent,x,y,z,w,h,d,material,name=""){
+  const m=new THREE.Mesh(
+    new THREE.BoxGeometry(w,h,d),
+    material
+  );
+
+  m.position.set(x,y,z);
+  m.name=name;
+  m.castShadow=false;
+  m.receiveShadow=true;
+  parent.add(m);
+  return m;
+}
+
+function cylinder(parent,x,y,z,r1,r2,h,material,segments=12){
+  const m=new THREE.Mesh(
+    new THREE.CylinderGeometry(r1,r2,h,segments),
+    material
+  );
+
+  m.position.set(x,y,z);
+  parent.add(m);
+  return m;
+}
+
+function sphere(parent,x,y,z,r,material){
+  const m=new THREE.Mesh(
+    new THREE.SphereGeometry(r,12,10),
+    material
+  );
+
+  m.position.set(x,y,z);
+  parent.add(m);
+  return m;
+}
+
+function addCollider(x,y,z,w,h,d,level){
+  wallColliders.push({
+    level,
+    minX:x-w/2,
+    maxX:x+w/2,
+    minY:y-h/2,
+    maxY:y+h/2,
+    minZ:z-d/2,
+    maxZ:z+d/2
+  });
+}
+
+/* MOBILIARIO */
+
+function desk(parent,x,z){
+  box(parent,x,.9,z,1.5,.13,.78,mat.desk);
+
+  for(const dx of [-.62,.62]){
+    for(const dz of [-.28,.28]){
+      box(parent,x+dx,.46,z+dz,.07,.82,.07,mat.metal);
+    }
+  }
+
+  box(parent,x,.99,z-.33,.7,.035,.05,mat.yellow);
+}
+
+function chair(parent,x,z){
+  box(parent,x,.63,z,.58,.12,.56,mat.blue);
+  box(parent,x,.99,z-.23,.58,.65,.09,mat.blue);
+
+  for(const dx of [-.22,.22]){
+    for(const dz of [-.2,.2]){
+      box(parent,x+dx,.32,z+dz,.055,.6,.055,mat.metal);
+    }
+  }
+}
+
+function board(parent,x,z){
+  box(parent,x,2.0,z,4.7,1.3,.13,mat.dark);
+  box(parent,x,2.0,z+.08,4.45,1.05,.025,mat.board);
+  box(parent,x,1.28,z+.15,4.5,.07,.2,mat.metal);
+}
+
+function classroom(parent,x,z){
+  board(parent,x,z-3.7);
+
+  /* 25 mesas y 25 sillas individuales para estudiantes */
+  for(let r=0;r<5;r++){
+    for(let c=0;c<5;c++){
+      const dx=x-2.7+c*1.35;
+      const dz=z-.8+r*1.05;
+      box(parent,dx,.9,dz,1.02,.12,.62,mat.desk);
+      for(const sx of [-.42,.42]){
+        for(const sz of [-.23,.23]){
+          box(parent,dx+sx,.46,dz+sz,.055,.82,.055,mat.metal);
+        }
+      }
+      box(parent,dx,.99,dz-.25,.55,.035,.045,mat.yellow);
+      chair(parent,dx,dz+.48);
+    }
+  }
+
+  /* Escritorio del docente */
+  desk(parent,x,z-3.0);
+  chair(parent,x,z-2.1);
+
+  /* Pantalla de proyección */
+
+  box(parent,x,2.75,z-3.55,2.8,1.45,.08,mat.white);
+  box(parent,x,2.75,z-3.48,2.65,1.3,.025,mat.blue);
+
+  /* Proyector */
+
+  box(parent,x,3.0,z-1.2,.55,.18,.45,mat.dark);
+}
+
+function office(parent,x,z){
+  desk(parent,x,z-1.5);
+  chair(parent,x,z-.3);
+
+  box(parent,x-2.7,1.0,z-2,1.0,1.9,.55,mat.wood);
+
+  for(let i=0;i<4;i++){
+    box(parent,x-2.7,.45+i*.42,z-1.68,1,.06,.45,mat.desk);
+  }
+
+  box(parent,x+2.4,.9,z-2,1.2,1.7,.65,mat.dark);
+  desk(parent,x+1.5,z+2);
+
+  /* Computadora de oficina */
+
+  box(parent,x+1.5,1.45,z+1.75,.85,.55,.08,mat.black);
+  box(parent,x+1.5,1.45,z+1.80,.72,.42,.025,mat.blue);
+}
+
+function library(parent,x,z){
+  for(const dx of [-2.8,2.8]){
+    box(parent,x+dx,1.35,z,.38,2.5,5.8,mat.wood);
+
+    for(let row=0;row<4;row++){
+      box(parent,x+dx,.45+row*.55,z,.42,.06,5.7,mat.desk);
+
+      for(let i=0;i<5;i++){
+        const colors=[
+          0x236e9a,0xb17b32,0x8d4444,0x44845c,0x665a9b
+        ];
+
+        const bookMat=new THREE.MeshStandardMaterial({
+          color:colors[i]
+        });
+
+        box(
+          parent,
+          x+dx,
+          .7+row*.55,
+          z-2+i*.9,
+          .26,.38,.5,
+          bookMat
+        );
+      }
+    }
+  }
+
+  desk(parent,x,z);
+  chair(parent,x,z+1);
+}
+
+function lab(parent,x,z){
+  for(let i=0;i<2;i++){
+    const xx=x-1.55+i*3.1;
+
+    box(parent,xx,.95,z,2.3,.15,1.3,mat.metal);
+    box(parent,xx,.45,z,.08,.85,.08,mat.dark);
+    box(parent,xx,.45,z+1,.08,.85,.08,mat.dark);
+
+    cylinder(parent,xx,1.2,z,.18,.15,.35,mat.glass,12);
+    cylinder(parent,xx+.5,1.18,z,.12,.1,.3,mat.redChair,12);
+  }
+
+  box(parent,x,2.0,z-3.6,4.2,1.0,.12,mat.dark);
+
+  /* Equipo de laboratorio */
+
+  for(let i=0;i<3;i++){
+    cylinder(parent,x-2+i*2,1.3,z+1.2,.15,.12,.4,mat.glass,16);
+    box(parent,x-2+i*2,.18,z+1.2,.35,.3,.35,mat.white);
+  }
+}
+
+function computerLab(parent,x,z){
+  for(let row=0;row<2;row++){
+    for(let col=0;col<3;col++){
+      const xx=x-2.6+col*2.6;
+      const zz=z-1.5+row*3;
+
+      desk(parent,xx,zz);
+
+      box(parent,xx,.9,zz-.2,.95,.65,.12,mat.dark);
+      box(parent,xx,.92,zz-.1,.82,.48,.025,mat.blue);
+      box(parent,xx,.55,zz+.1,.3,.08,.3,mat.metal);
+
+      chair(parent,xx,zz+1);
+    }
+  }
+}
+
+function foodArea(parent,x,z){
+  for(let i=0;i<2;i++){
+    const zz=z-1.6+i*3.2;
+
+    box(parent,x,.9,zz,2.8,.15,1.2,mat.desk);
+
+    for(const dx of [-1,1]){
+      chair(parent,x+dx,zz+1);
+      chair(parent,x+dx,zz-1);
+    }
+  }
+
+  box(parent,x,2,z-3.65,3.5,.85,.12,mat.red);
+
+  /* Se conserva el área de mesas sin barras ni mostradores que obstruyan el espacio. */
+}
+
+function storageArea(parent,x,z){
+  /* Estantes bajos para organizar el material deportivo */
+  for(let row=0;row<2;row++){
+    const zz=z-2.6+row*5.0;
+    box(parent,x-3.0,1.25,zz,1.35,2.2,.35,mat.wood);
+    for(let shelf=0;shelf<3;shelf++){
+      box(parent,x-3.0,.55+shelf*.65,zz+.22,1.3,.08,.55,mat.metal);
+    }
+  }
+  /* Balones de distintos deportes */
+  const ballMats=[mat.blue,mat.yellow,mat.redChair,mat.green];
+  for(let i=0;i<4;i++){
+    sphere(parent,x-1.7+(i%2)*1.1,.55+Math.floor(i/2)*.75,z-2.2,.38,ballMats[i]);
+  }
+  /* Conos y colchonetas */
+  for(let i=0;i<3;i++){
+    cylinder(parent,x+1.2+i*.7,.38,z+2.1,.18,.02,.65,mat.yellow,12);
+  }
+  box(parent,x+2.0,.35,z-.8,1.25,.45,.75,mat.blue);
+  box(parent,x+2.0,.72,z-.8,1.25,.18,.75,mat.redChair);
+}
+
+function bathroom(parent,x,z){
+  for(let i=0;i<3;i++){
+    const xx=x-2.4+i*2.4;
+
+    box(parent,xx,.9,z,1.7,1.7,1.5,mat.white);
+    box(parent,xx,.18,z,.15,.35,.15,mat.metal);
+  }
+
+  box(parent,x,1.2,z-3.4,3.8,.25,.6,mat.white);
+
+  for(let i=0;i<2;i++){
+    box(parent,x-1+i*2,1.7,z-3.1,.55,.65,.08,mat.glass);
+  }
+}
+
+function gym(parent,x,z){
+  box(parent,x,.55,z,4.6,.15,3.1,mat.dark);
+  box(parent,x,1.3,z-3.5,4.4,.12,.12,mat.red);
+
+  cylinder(parent,x,2.0,z-3.5,.45,.45,.12,mat.metal,20);
+
+  box(parent,x-2,.9,z+2,1.0,.15,1.0,mat.green);
+  box(parent,x+2,.9,z+2,1.0,.15,1.0,mat.green);
+
+  /* Equipo deportivo */
+
+  for(let i=0;i<3;i++){
+    cylinder(parent,x-3+i*3,.65,z+3,.22,.22,.4,mat.metal,16);
+  }
+
+  /* Costales de boxeo suspendidos en soportes individuales */
+  for(let i=0;i<3;i++){
+    const bx=x-2.8+i*2.8;
+    box(parent,bx,2.75,z+3.0,.06,1.0,.06,mat.metal);
+    cylinder(parent,bx,1.95,z+3.0,.32,.28,1.45,mat.redChair,18);
+    cylinder(parent,bx,1.18,z+3.0,.29,.29,.12,mat.black,18);
+  }
+
+  /* Ring y cuerdas */
+
+  box(parent,x,.35,z,4.8,.18,3.3,mat.white);
+
+  for(let h=0;h<3;h++){
+    const yy=.9+h*.42;
+    box(parent,x-2.3,yy,z,.08,.08,3.2,mat.red);
+    box(parent,x+2.3,yy,z,.08,.08,3.2,mat.red);
+    box(parent,x,yy,z-1.6,4.6,.08,.08,mat.red);
+    box(parent,x,yy,z+1.6,4.6,.08,.08,mat.red);
+  }
+}
+
+/* PUERTAS */
+
+function createDoor(parent,x,z,level,roomName){
+  const pivot=new THREE.Group();
+
+  pivot.position.set(x-.55,0,z);
+  parent.add(pivot);
+
+  const leaf=box(
+    pivot,.55,1.1,0,
+    1.1,2.2,.14,
+    mat.wood,
+    "Puerta "+roomName
+  );
+
+  leaf.userData.door=true;
+  leaf.userData.pivot=pivot;
+  leaf.userData.level=level;
+  leaf.userData.roomName=roomName;
+  leaf.userData.open=false;
+
+  /* Manija */
+
+  sphere(pivot,1.0,1.1,.1,.07,mat.yellow);
+
+  doors.push(leaf);
+
+  return leaf;
+}
+
+/* LETREROS DE LOS ESPACIOS */
+
+function makeLabel(name){
+  const c=document.createElement("canvas");
+
+  c.width=512;
+  c.height=128;
+
+  const ctx=c.getContext("2d");
+
+  ctx.fillStyle="rgba(2,19,36,.92)";
+  ctx.fillRect(0,0,512,128);
+
+  ctx.strokeStyle="#29dcff";
+  ctx.lineWidth=5;
+  ctx.strokeRect(3,3,506,122);
+
+  ctx.fillStyle="#fff";
+  ctx.font="bold 34px Arial";
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.fillText(name,256,64,475);
+
+  const tex=new THREE.CanvasTexture(c);
+
+  return new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map:tex,
+      transparent:true,
+      depthWrite:false
+    })
+  );
+}
+
+/* CREACIÓN DE ESPACIOS */
+
+function createRoom(level,item){
+  const [name,x,z,type]=item;
+
+  const group=floorGroups[level];
+
+  const room=new THREE.Group();
+  room.position.y=level*CONFIG.floorHeight;
+  group.add(room);
+
+  const floor=box(
+    room,x,.12,z,
+    8,.22,8,
+    mat.floor,
+    name
+  );
+
+  floor.userData.room={name,level,x,z,type};
+  floor.userData.description=descriptions[type]||"Espacio escolar.";
+
+  roomObjects.push(floor);
+
+  /* Muros posterior y laterales */
+
+  box(room,x,1.65,z-4,8,3.1,.2,mat.red);
+  box(room,x-4,1.65,z,.2,3.1,8,mat.white);
+  box(room,x+4,1.65,z,.2,3.1,8,mat.white);
+
+  addCollider(x,1.65,z-4,8,3.1,.2,level);
+  addCollider(x-4,1.65,z,.2,3.1,8,level);
+  addCollider(x+4,1.65,z,.2,3.1,8,level);
+
+  /* Frente con entrada amplia */
+
+  for(const side of [-1,1]){
+    const wallX=x+side*2.8;
+
+    box(room,wallX,1.65,z+4,2.4,3.1,.2,mat.white);
+
+    addCollider(
+      wallX,1.65,z+4,
+      2.4,3.1,.2,
+      level
+    );
+  }
+
+  createDoor(room,x-.55,z+4,level,name);
+
+  /* Ventanas */
+
+  for(const side of [-1,1]){
+    box(room,x+side*3.88,2.05,z-1.8,.035,.9,1.5,mat.glass);
+    box(room,x+side*3.88,2.05,z+1.4,.035,.9,1.5,mat.glass);
+  }
+
+  /* Techo */
+
+  const roof=box(
+    room,x,3.3,z,
+    8,.18,8,
+    mat.roof
+  );
+
+  roof.userData.roof=true;
+  roofMeshes.push(roof);
+
+  /* Lámpara interior */
+
+  box(room,x,3.05,z,2.1,.08,.45,mat.light);
+
+  /* Mobiliario */
+
+  if(type==="class")classroom(room,x,z);
+  if(type==="office")office(room,x,z);
+  if(type==="library")library(room,x,z);
+  if(type==="lab")lab(room,x,z);
+  if(type==="computer")computerLab(room,x,z);
+  if(type==="food")foodArea(room,x,z);
+  if(type==="bath")bathroom(room,x,z);
+  if(type==="gym")gym(room,x,z);
+  if(type==="storage")storageArea(room,x,z);
+
+  /* Letrero */
+
+  const sprite=makeLabel(name);
+  sprite.position.set(x,4.15,z);
+  sprite.scale.set(6,1.5,1);
+
+  room.add(sprite);
+  labels.push(sprite);
+
+  return floor;
+}
+
+/* PASILLOS SIN BARANDALES LARGOS */
+
+function createHallway(level){
+  const group=floorGroups[level];
+  const y=level*CONFIG.floorHeight;
+
+  /* Pasillo central */
+
+  box(group,0,y+.03,0,48,.12,5.2,mat.floor);
+
+  /* Conexión hacia la entrada */
+
+  box(group,0,y+.03,17,5.2,.12,29,mat.floor);
+
+  /* Lámparas cortas del pasillo */
+
+  for(let x=-18;x<=18;x+=6){
+    box(
+      group,
+      x,y+3.8,0,
+      .8,.08,.35,
+      mat.light
+    );
+  }
+
+  /* Señalización de pasillo */
+
+  for(let x=-18;x<=18;x+=12){
+    box(group,x,y+.12,2.35,2.2,.035,.08,mat.yellow);
+  }
+}
+
+/* ESCALERAS CENTRALES */
+
+function createStairs(){
+  const stairs=new THREE.Group();
+  scene.add(stairs);
+
+  for(let level=0;level<3;level++){
+    const base=level*CONFIG.floorHeight;
+
+    for(let i=0;i<12;i++){
+      box(
+        stairs,
+        23,
+        base+.15+i*.27,
+        2-i*.34,
+        3,.22,.62,
+        mat.floor
+      );
+    }
+
+    box(
+      stairs,
+      23,
+      base+1.65,
+      0,
+      3,.12,4,
+      mat.metal
+    );
+  }
+
+  /* Señalización vertical del núcleo */
+
+  for(let level=0;level<4;level++){
+    const sign=makeLabel("PLANTA "+(level+1));
+    sign.position.set(23,level*CONFIG.floorHeight+2.5,-3.5);
+    sign.scale.set(3,0.8,1);
+    stairs.add(sign);
+  }
+}
+
+/* FACHADA PRINCIPAL: ACCESO ABIERTO Y SIN BARRAS */
+
+let buildingGroup;
+
+function createSchoolEntrance(){
+  buildingGroup=new THREE.Group();
+  scene.add(buildingGroup);
+
+  /*
+    IMPORTANTE:
+    La fachada se construye en dos secciones laterales.
+    No existe un muro completo detrás de la puerta.
+    Tampoco se colocan tubos, barras o pasarelas elevadas
+    frente al acceso.
+  */
+
+  /* Ala izquierda */
+
+  box(
+    buildingGroup,
+    -16,2.1,14,
+    16,4.2,1.0,
+    mat.wall
+  );
+
+  /* Ala derecha */
+
+  box(
+    buildingGroup,
+    16,2.1,14,
+    16,4.2,1.0,
+    mat.wall
+  );
+
+  /* Remate superior */
+
+  box(
+    buildingGroup,
+    0,4.35,14,
+    16,.35,1.0,
+    mat.red
+  );
+
+  /* Sin columnas, postes ni barras verticales frente al acceso. */
+
+  /* Marco superior de la entrada */
+
+  box(
+    buildingGroup,
+    0,4.1,13.25,
+    7.2,.35,.45,
+    mat.red
+  );
+
+  /* Cristales laterales de la puerta */
+
+  box(
+    buildingGroup,
+    -3.05,2.0,13.25,
+    .25,3.6,.12,
+    mat.glass
+  );
+
+  box(
+    buildingGroup,
+    3.05,2.0,13.25,
+    .25,3.6,.12,
+    mat.glass
+  );
+
+  /* Puertas de cristal abiertas */
+
+  const glassDoorMat=new THREE.MeshPhysicalMaterial({
+    color:0x8eeaff,
+    transparent:true,
+    opacity:.32,
+    roughness:.12,
+    metalness:.15,
+    clearcoat:1
+  });
+
+  box(
+    buildingGroup,
+    -1.15,1.8,13.15,
+    2.1,3.5,.12,
+    glassDoorMat
+  );
+
+  box(
+    buildingGroup,
+    1.15,1.8,13.15,
+    2.1,3.5,.12,
+    glassDoorMat
+  );
+
+  /* Acceso libre: sin manijas verticales ni barras frente a las puertas. */
+
+  /* Escalón único y corto, pegado a la entrada */
+
+  box(
+    buildingGroup,
+    0,.08,14.75,
+    5.4,.16,.7,
+    mat.floor
+  );
+
+  /* Camino exterior a ras del suelo */
+
+  const pathMat=new THREE.MeshStandardMaterial({
+    color:0xb9c5c9,
+    roughness:.9
+  });
+
+  box(
+    buildingGroup,
+    0,-.09,20.5,
+    5.4,.08,10.8,
+    pathMat
+  );
+
+  /* Letrero institucional */
+
+  const signCanvas=document.createElement("canvas");
+  signCanvas.width=1024;
+  signCanvas.height=220;
+
+  const ctx=signCanvas.getContext("2d");
+
+  ctx.fillStyle="#071d35";
+  ctx.fillRect(0,0,1024,220);
+
+  ctx.strokeStyle="#2adfff";
+  ctx.lineWidth=10;
+  ctx.strokeRect(8,8,1008,204);
+
+  ctx.fillStyle="#fff";
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.font="bold 66px Arial";
+  ctx.fillText("PREPARATORIA",512,75);
+
+  ctx.fillStyle="#75eaff";
+  ctx.font="bold 58px Arial";
+  ctx.fillText("LA GALAXIA DEL SABER",512,155);
+
+  const signTex=new THREE.CanvasTexture(signCanvas);
+
+  const sign=new THREE.Mesh(
+    new THREE.PlaneGeometry(18,3.85),
+    new THREE.MeshBasicMaterial({
+      map:signTex,
+      side:THREE.DoubleSide
+    })
+  );
+
+  sign.position.set(0,7.1,13.25);
+  buildingGroup.add(sign);
+
+  /* Logo original */
+
+  const loader=new THREE.TextureLoader();
+
+  loader.load(
+    CONFIG.logo,
+    texture=>{
+      texture.colorSpace=THREE.SRGBColorSpace;
+
+      const logo=new THREE.Mesh(
+        new THREE.PlaneGeometry(2.2,2.2),
+        new THREE.MeshBasicMaterial({
+          map:texture,
+          transparent:true,
+          side:THREE.DoubleSide
+        })
+      );
+
+      logo.position.set(-11,2.8,13.35);
+      buildingGroup.add(logo);
+    },
+    undefined,
+    ()=>console.warn("No se encontró el logo de la escuela.")
+  );
+}
+
+/* CANCHA DEPORTIVA EXTERIOR DE LA PLANTA BAJA */
+
+let sportsCourtFloor=null;
+
+function createSportsCourt(){
+  const court=new THREE.Group();
+  scene.add(court);
+
+  const surfaceMat=new THREE.MeshStandardMaterial({color:0x347b4b,roughness:.92});
+  sportsCourtFloor=box(court,0,-.055,-52,34,.12,20,surfaceMat,"CANCHA DEPORTIVA");
+  sportsCourtFloor.userData.room={
+    name:"CANCHA DEPORTIVA",
+    level:0,
+    x:0,
+    z:-52,
+    type:"court"
+  };
+  sportsCourtFloor.userData.description=descriptions.court;
+  roomObjects.push(sportsCourtFloor);
+
+  const lineMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.65});
+
+  /* Perímetro y línea central */
+
+  box(court,0,.012,-62,33.5,.035,.12,lineMat);
+  box(court,0,.012,-42,33.5,.035,.12,lineMat);
+  box(court,-16.75,.012,-52,.12,.035,20,lineMat);
+  box(court,16.75,.012,-52,.12,.035,20,lineMat);
+  box(court,0,.014,-52,.12,.035,19.8,lineMat);
+
+  /* Círculo central */
+
+  const circle=new THREE.Mesh(
+    new THREE.TorusGeometry(2.0,.055,8,48),
+    lineMat
+  );
+
+  circle.rotation.x=Math.PI/2;
+  circle.position.set(0,.025,-52);
+  court.add(circle);
+
+  /* Áreas de basquetbol y tableros */
+
+  for(const side of [-1,1]){
+    const bz=-52+side*8.8;
+
+    box(court,0,.015,bz,11,.035,7.8,lineMat);
+    box(court,0,.02,bz,6,.04,4.2,lineMat);
+    box(court,0,3.1,bz,3.0,.16,.18,mat.metal);
+    box(court,0,3.1,bz+side*.12,2.65,1.55,.08,mat.white);
+    box(court,0,3.1,bz+side*.18,2.35,1.25,.035,mat.blue);
+    box(court,0,2.35,bz+side*.8,1.05,.08,.08,mat.red);
+
+    const hoop=new THREE.Mesh(
+      new THREE.TorusGeometry(.48,.055,8,24),
+      new THREE.MeshStandardMaterial({
+        color:0xff8b22,
+        metalness:.4,
+        roughness:.35
+      })
+    );
+
+    hoop.position.set(0,2.35,bz+side*1.0);
+    court.add(hoop);
+  }
+
+  /* Porterías pequeñas para futbol */
+
+  for(const side of [-1,1]){
+    const gx=side*14.8;
+    const gz=-52;
+
+    const goalMat=new THREE.MeshStandardMaterial({
+      color:0xf5f7f8,
+      metalness:.35,
+      roughness:.4
+    });
+
+    box(court,gx,1.05,gz,.12,2.1,5.0,goalMat);
+    box(court,gx-side*1.2,2.1,gz,2.4,.12,.12,goalMat);
+    box(court,gx-side*2.4,1.05,gz,.12,2.1,5.0,goalMat);
+
+    /* Red de portería */
+
+    for(let i=0;i<=5;i++){
+      box(court,gx-side*1.2,1.0,gz-2.3+i*.92,2.3,.025,.025,lineMat);
+    }
+  }
+
+  /* Bancas laterales */
+
+  for(const side of [-1,1]){
+    box(court,side*19,.42,-52,2.5,.18,5.5,mat.wood);
+
+    for(const dx of [-.9,.9]){
+      box(court,side*19+dx,.2,-52,.12,.42,5.0,mat.metal);
+    }
+  }
+
+  /* Rótulo de la cancha */
+
+  const label=makeLabel("CANCHA DEPORTIVA");
+  label.position.set(0,4.0,-63.5);
+  label.scale.set(7,1.7,1);
+  court.add(label);
+  labels.push(label);
+}
+
+/* EXTERIOR, JARDINES Y TERRENO */
+
+function createExterior(){
+
+  const ground=new THREE.Mesh(
+    new THREE.PlaneGeometry(180,160),
+    new THREE.MeshStandardMaterial({
+      color:0x83ae83,
+      roughness:1
+    })
+  );
+
+  ground.rotation.x=-Math.PI/2;
+  ground.position.y=-.22;
+  scene.add(ground);
+
+  /* Cancha ubicada en el terreno de la planta baja */
+
+  createSportsCourt();
+
+  /* Patio principal */
+
+  box(scene,0,-.08,25,38,.08,20,mat.floor);
+
+  /* Jardineras */
+
+  for(const [x,z] of [
+    [-31,-15],[-31,20],[31,-18],[32,20],
+    [-22,39],[23,39],[-29,39],[29,39]
+  ]){
+    box(scene,x,.08,z,3.5,.25,3.5,mat.wood);
+    cylinder(scene,x,1.35,z,.25,.4,2.3,mat.wood,8);
+    sphere(scene,x,3.0,z,1.7,mat.green);
+  }
+
+  /* Árboles adicionales */
+
+  for(const [x,z] of [
+    [-42,-20],[42,-20],[-42,28],[42,28]
+  ]){
+    cylinder(scene,x,1.5,z,.35,.5,3,mat.wood,8);
+    sphere(scene,x,3.5,z,2.2,mat.green);
+    sphere(scene,x-.8,3.1,z+.4,1.3,mat.green);
+    sphere(scene,x+.8,3.2,z-.4,1.4,mat.green);
+  }
+
+  /* Luminarias exteriores */
+
+  for(const [x,z] of [[-27,27],[27,27],[-27,-22],[27,-22]]){
+    cylinder(scene,x,2,z,.09,.09,4,mat.metal,12);
+    sphere(scene,x,4.1,z,.25,mat.yellow);
+  }
+}
+
+/* CONSTRUCCIÓN DE LA ESCUELA */
+
+function buildSchool(){
+
+  for(let i=0;i<4;i++){
+    const g=new THREE.Group();
+    scene.add(g);
+    floorGroups.push(g);
+  }
+
+  for(let level=0;level<4;level++){
+    createHallway(level);
+    plans[level].forEach(item=>createRoom(level,item));
+  }
+
+  createStairs();
+  createSchoolEntrance();
+  createExterior();
+}
+
+/* INICIALIZACIÓN */
+
+function initExplorer(){
+
+  if(initialized)return;
+
+  initialized=true;
+
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0xa6cddd);
+  scene.fog=new THREE.Fog(0xa6cddd,100,190);
+
+  camera=new THREE.PerspectiveCamera(
+    65,
+    innerWidth/innerHeight,
+    .1,
+    300
+  );
+
+  camera.position.set(48,38,55);
+
+  renderer=new THREE.WebGLRenderer({
+    canvas:$("schoolCanvas"),
+    antialias:devicePixelRatio<=1,
+    powerPreference:"high-performance"
+  });
+
+  renderer.setPixelRatio(
+    Math.min(devicePixelRatio,CONFIG.maxPixelRatio)
+  );
+
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+
+  scene.add(
+    new THREE.HemisphereLight(
+      0xffffff,
+      0x657c8a,
+      2.1
+    )
+  );
+
+  const sun=new THREE.DirectionalLight(0xffffff,2.1);
+  sun.position.set(-40,70,35);
+  scene.add(sun);
+
+  const fillLight=new THREE.DirectionalLight(0x9beaff,.55);
+  fillLight.position.set(35,30,-30);
+  scene.add(fillLight);
+
+  orbit=new OrbitControls(camera,renderer.domElement);
+  orbit.enableDamping=true;
+  orbit.dampingFactor=.075;
+  orbit.minDistance=5;
+  orbit.maxDistance=130;
+  orbit.maxPolarAngle=Math.PI*.49;
+  orbit.target.set(0,7,0);
+
+  pointer=new PointerLockControls(
+    camera,
+    renderer.domElement
+  );
+
+  pointer.addEventListener("lock",()=>{
+    $("walkHelp").style.display="block";
+    $("crosshair").style.display="block";
+  });
+
+  pointer.addEventListener("unlock",()=>{
+    $("walkHelp").style.display="none";
+    $("crosshair").style.display="none";
+  });
+
+  clock=new THREE.Clock();
+
+  buildSchool();
+  buildRoomMenu();
+  bindExplorerEvents();
+
+  overview();
+
+  $("loading").style.display="none";
+
+  animate();
+}
+
+/* MENÚ DE ESPACIOS */
+
+function buildRoomMenu(){
+  const menu=$("roomMenu");
+  menu.innerHTML="";
+
+  plans.forEach((rooms,level)=>{
+    const heading=document.createElement("div");
+    heading.className="panel-title";
+    heading.textContent="PLANTA "+(level+1);
+    menu.appendChild(heading);
+
+    rooms.forEach(item=>{
+      const button=document.createElement("button");
+      button.className="control";
+      button.textContent="▸ "+item[0];
+
+      button.addEventListener("click",()=>{
+        if(walkMode)exitWalk();
+
+        const object=roomObjects.find(o=>
+          o.userData.room?.level===level&&
+          o.userData.room?.name===item[0]
+        );
+
+        if(object)selectRoom(object);
+      });
+
+      menu.appendChild(button);
+    });
+  });
+
+  const exteriorHeading=document.createElement("div");
+  exteriorHeading.className="panel-title";
+  exteriorHeading.textContent="ÁREAS EXTERIORES · PLANTA BAJA";
+  menu.appendChild(exteriorHeading);
+
+  const courtButton=document.createElement("button");
+  courtButton.className="control";
+  courtButton.textContent="▸ CANCHA DEPORTIVA";
+
+  courtButton.addEventListener("click",()=>{
+    if(walkMode)exitWalk();
+    if(sportsCourtFloor)selectRoom(sportsCourtFloor);
+  });
+
+  menu.appendChild(courtButton);
+}
+
+/* CÁMARA Y VISTAS */
+
+function showFloor(level){
+
+  if(walkMode)exitWalk();
+
+  currentFloor=THREE.MathUtils.clamp(level,0,3);
+
+  floorGroups.forEach((g,i)=>{
+    g.visible=i===currentFloor;
+  });
+
+  $("topStatus").textContent="PLANTA "+(currentFloor+1);
+
+  document.querySelectorAll("[data-floor]").forEach(b=>{
+    b.classList.toggle(
+      "active",
+      Number(b.dataset.floor)===currentFloor
+    );
+  });
+
+  camera.position.set(
+    38,
+    currentFloor*CONFIG.floorHeight+19,
+    39
+  );
+
+  orbit.target.set(
+    0,
+    currentFloor*CONFIG.floorHeight,
+    0
+  );
+
+  orbit.enabled=true;
+  orbit.update();
+
+  $("roomTitle").textContent="PLANTA "+(currentFloor+1);
+
+  $("roomDescription").textContent=
+    "Selecciona un espacio de esta planta para acercarte y explorarlo.";
+
+  $("status").textContent=
+    "Visualizando planta "+(currentFloor+1);
+}
+
+/* VISTA GENERAL CORREGIDA */
+
+function overview(){
+
+  if(!initialized)return;
+
+  if(walkMode)exitWalk();
+
+  /* Siempre restablece las plantas a su altura original */
+
+  if(separated){
+    floorGroups.forEach(g=>g.position.y=0);
+    separated=false;
+  }
+
+  floorGroups.forEach(g=>{
+    g.visible=true;
+  });
+
+  currentFloor=0;
+  selectedRoom=null;
+
+  camera.position.set(49,39,57);
+
+  orbit.target.set(0,6,-20);
+  orbit.enabled=true;
+  orbit.update();
+
+  $("topStatus").textContent=
+    "VISTA GENERAL · CUATRO PLANTAS";
+
+  $("roomTitle").textContent="VISTA GENERAL";
+
+  $("roomDescription").textContent=
+    "Observa la escuela completa, incluyendo la entrada principal, el nombre institucional y sus cuatro niveles. Puedes girar, acercar y alejar la cámara.";
+
+  $("status").textContent=
+    "Vista general activa: los cuatro pisos están visibles.";
+
+  document.querySelectorAll("[data-floor]").forEach(b=>{
+    b.classList.remove("active");
+  });
+}
+
+function selectRoom(object){
+
+  const data=object.userData.room;
+  if(!data)return;
+
+  if(walkMode)exitWalk();
+
+  showFloor(data.level);
+
+  selectedRoom=object;
+
+  const y=data.level*CONFIG.floorHeight;
+
+  orbit.target.set(
+    data.x,
+    y+1.4,
+    data.z
+  );
+
+  camera.position.set(
+    data.x+10,
+    y+8,
+    data.z+11
+  );
+
+  orbit.update();
+
+  $("roomTitle").textContent=data.name;
+
+  $("roomDescription").textContent=
+    object.userData.description||descriptions[data.type];
+
+  $("status").textContent=
+    "Espacio seleccionado: "+data.name;
+}
+
+/* SEPARAR Y UNIR PLANTAS */
+
+function separateFloors(){
+
+  if(separated)return;
+
+  separated=true;
+
+  floorGroups.forEach((g,i)=>{
+    g.position.y=i*3.5;
+  });
+
+  $("status").textContent=
+    "Plantas separadas para observar la estructura.";
+
+}
+
+function joinFloors(){
+
+  if(!separated)return;
+
+  separated=false;
+
+  floorGroups.forEach(g=>{
+    g.position.y=0;
+  });
+
+  $("status").textContent=
+    "Plantas unidas en su posición original.";
+}
+
+/* PRIMERA PERSONA */
+
+function enterWalk(){
+
+  if(!initialized||walkMode)return;
+
+  walkMode=true;
+
+  orbit.enabled=false;
+
+  floorGroups.forEach((g,i)=>{
+    g.visible=i===currentFloor;
+  });
+
+  camera.position.set(
+    0,
+    currentFloor*CONFIG.floorHeight+1.7,
+    25
+  );
+
+  camera.rotation.set(0,0,0);
+
+  pointer.lock();
+
+  $("topStatus").textContent=
+    "RECORRIDO EN PRIMERA PERSONA";
+
+  $("status").textContent=
+    "Recorrido activo. Usa WASD o flechas para caminar.";
+}
+
+function exitWalk(){
+
+  if(!walkMode)return;
+
+  walkMode=false;
+
+  if(pointer?.isLocked)pointer.unlock();
+
+  if(orbit)orbit.enabled=true;
+
+  $("walkHelp").style.display="none";
+  $("crosshair").style.display="none";
+}
+
+/* COLISIONES */
+
+function collisionAt(p){
+
+  const radius=.42;
+
+  if(
+    p.x< -27||
+    p.x>27||
+    p.z< -78||
+    p.z>48
+  )return true;
+
+  for(const b of wallColliders){
+
+    if(b.level!==currentFloor)continue;
+
+    const yBase=currentFloor*CONFIG.floorHeight;
+
+    const playerBottom=p.y-1.65;
+    const playerTop=p.y+.1;
+
+    const intersects=
+      p.x+radius>b.minX&&
+      p.x-radius<b.maxX&&
+      p.z+radius>b.minZ&&
+      p.z-radius<b.maxZ&&
+      playerTop>b.minY+yBase&&
+      playerBottom<b.maxY+yBase;
+
+    if(intersects)return true;
+  }
+
+  for(const d of doors){
+
+    if(
+      d.userData.level!==currentFloor||
+      d.userData.open
+    )continue;
+
+    const pos=new THREE.Vector3();
+    d.getWorldPosition(pos);
+
+    if(
+      Math.abs(p.x-pos.x)<.55&&
+      Math.abs(p.z-pos.z)<.4
+    )return true;
+  }
+
+  return false;
+}
+
+/* MOVIMIENTO */
+
+function updateWalk(delta){
+
+  if(!walkMode||!pointer.isLocked)return;
+
+  const forwardAmount=
+    Number(keys.KeyW||keys.ArrowUp)-
+    Number(keys.KeyS||keys.ArrowDown);
+
+  const sideAmount=
+    Number(keys.KeyD||keys.ArrowRight)-
+    Number(keys.KeyA||keys.ArrowLeft);
+
+  const direction=new THREE.Vector3();
+  camera.getWorldDirection(direction);
+  direction.y=0;
+  direction.normalize();
+
+  const right=new THREE.Vector3()
+    .crossVectors(direction,new THREE.Vector3(0,1,0))
+    .normalize();
+
+  const move=new THREE.Vector3()
+    .addScaledVector(direction,forwardAmount)
+    .addScaledVector(right,sideAmount);
+
+  if(move.lengthSq()>0){
+
+    move.normalize();
+
+    const speed=
+      (keys.ShiftLeft||keys.ShiftRight)
+      ?CONFIG.runSpeed
+      :CONFIG.walkSpeed;
+
+    move.multiplyScalar(speed*delta);
+
+    const next=camera.position.clone().add(move);
+
+    if(!collisionAt(next)){
+      camera.position.copy(next);
+    }else{
+      const testX=camera.position.clone();
+      testX.x=next.x;
+
+      if(!collisionAt(testX)){
+        camera.position.x=next.x;
+      }
+
+      const testZ=camera.position.clone();
+      testZ.z=next.z;
+
+      if(!collisionAt(testZ)){
+        camera.position.z=next.z;
+      }
+    }
+  }
+
+  if(!onGround){
+
+    verticalVelocity-=CONFIG.gravity*delta;
+    camera.position.y+=verticalVelocity*delta;
+
+    const groundY=currentFloor*CONFIG.floorHeight+1.7;
+
+    if(camera.position.y<=groundY){
+      camera.position.y=groundY;
+      verticalVelocity=0;
+      onGround=true;
+    }
+  }
+}
+
+function jump(){
+
+  if(!walkMode||!pointer.isLocked||!onGround)return;
+
+  onGround=false;
+  verticalVelocity=CONFIG.jumpSpeed;
+}
+
+/* PUERTAS */
+
+function nearestDoor(){
+
+  let nearest=null;
+  let best=3.1;
+
+  const p=camera.position;
+
+  doors.forEach(d=>{
+
+    if(d.userData.level!==currentFloor)return;
+
+    const pos=new THREE.Vector3();
+    d.getWorldPosition(pos);
+
+    const dist=Math.hypot(
+      p.x-pos.x,
+      p.z-pos.z
+    );
+
+    if(dist<best){
+      best=dist;
+      nearest=d;
+    }
+  });
+
+  return nearest;
+}
+
+function interactDoor(){
+
+  if(!walkMode)return;
+
+  const d=nearestDoor();
+
+  if(!d){
+    $("status").textContent=
+      "Acércate a una puerta para abrirla.";
+    return;
+  }
+
+  d.userData.open=!d.userData.open;
+
+  d.userData.pivot.rotation.y=
+    d.userData.open?-Math.PI/2:0;
+
+  $("status").textContent=
+    d.userData.roomName+
+    (d.userData.open?" · puerta abierta":" · puerta cerrada");
+}
+
+/* ESCALERAS */
+
+function useStairs(){
+
+  if(!walkMode)return;
+
+  const p=camera.position;
+
+  if(Math.hypot(p.x-23,p.z)<5.5){
+
+    const next=currentFloor>=3?0:currentFloor+1;
+
+    currentFloor=next;
+
+    floorGroups.forEach((g,i)=>{
+      g.visible=i===next;
+    });
+
+    camera.position.set(
+      23,
+      next*CONFIG.floorHeight+1.7,
+      0
+    );
+
+    $("topStatus").textContent=
+      "PLANTA "+(next+1)+" · RECORRIDO";
+
+    $("status").textContent=
+      "Llegaste a la planta "+(next+1)+".";
+
+  }else{
+
+    $("status").textContent=
+      "Acércate al núcleo de escaleras y pulsa F.";
+  }
+}
+
+/* SELECCIÓN CON MOUSE */
+
+function selectByMouse(event){
+
+  if(walkMode)return;
+
+  const rect=renderer.domElement.getBoundingClientRect();
+
+  mouse.x=((event.clientX-rect.left)/rect.width)*2-1;
+  mouse.y=-((event.clientY-rect.top)/rect.height)*2+1;
+
+  raycaster.setFromCamera(mouse,camera);
+
+  const visible=roomObjects.filter(o=>{
+    let p=o;
+
+    while(p){
+      if(!p.visible)return false;
+      p=p.parent;
+    }
+
+    return true;
+  });
+
+  const hits=raycaster.intersectObjects(visible,true);
+
+  if(!hits.length)return;
+
+  let obj=hits[0].object;
+
+  while(obj&&!obj.userData.room){
+    obj=obj.parent;
+  }
+
+  if(obj?.userData.room){
+    selectRoom(obj);
+  }
+}
+
+/* ROTACIÓN */
+
+function rotateCamera(angle){
+
+  if(walkMode)return;
+
+  const offset=camera.position.clone().sub(orbit.target);
+
+  offset.applyAxisAngle(
+    new THREE.Vector3(0,1,0),
+    angle
+  );
+
+  camera.position.copy(orbit.target).add(offset);
+  orbit.update();
+}
+
+/* EVENTOS */
+
+function bindExplorerEvents(){
+
+  document.querySelectorAll("[data-floor]").forEach(b=>{
+    b.addEventListener("click",()=>{
+      showFloor(Number(b.dataset.floor));
+    });
+  });
+
+  $("walkButton").onclick=enterWalk;
+  $("exitWalkButton").onclick=exitWalk;
+
+  /* Los tres botones llevan a la misma vista general */
+
+  $("overviewButton").onclick=overview;
+  $("topOverview").onclick=overview;
+  $("resetCamera").onclick=overview;
+
+  $("roofButton").onclick=()=>{
+    roofsVisible=!roofsVisible;
+
+    roofMeshes.forEach(m=>{
+      m.visible=roofsVisible;
+    });
+
+    $("status").textContent=
+      roofsVisible?"Techos visibles.":"Techos ocultos.";
+  };
+
+  $("labelsButton").onclick=()=>{
+    labelsVisible=!labelsVisible;
+
+    labels.forEach(m=>{
+      m.visible=labelsVisible;
+    });
+
+    $("status").textContent=
+      labelsVisible?"Nombres visibles.":"Nombres ocultos.";
+  };
+
+  $("separateButton").onclick=separateFloors;
+  $("joinButton").onclick=joinFloors;
+
+  $("zoomIn").onclick=()=>{
+    if(walkMode)return;
+
+    camera.position.lerp(orbit.target,.13);
+    orbit.update();
+  };
+
+  $("zoomOut").onclick=()=>{
+    if(walkMode)return;
+
+    camera.position.lerpVectors(
+      orbit.target,
+      camera.position,
+      1.13
+    );
+
+    orbit.update();
+  };
+
+  $("rotateLeft").onclick=()=>rotateCamera(.2);
+  $("rotateRight").onclick=()=>rotateCamera(-.2);
+
+  $("schoolCanvas").addEventListener(
+    "click",
+    selectByMouse
+  );
+
+  $("schoolCanvas").addEventListener(
+    "dblclick",
+    ()=>{
+      if(!walkMode)enterWalk();
+    }
+  );
+
+  $("musicButton").onclick=async()=>{
+    const a=$("schoolAudio");
+
+    if(a.paused){
+      try{
+        await a.play();
+        $("musicButton").textContent="♫ PAUSAR MÚSICA";
+      }catch(error){
+        $("status").textContent=
+          "No se pudo reproducir el audio. Revisa tu conexión.";
+      }
+    }else{
+      a.pause();
+      $("musicButton").textContent="♫ REPRODUCIR MÚSICA";
+    }
+  };
+
+  window.addEventListener("keydown",e=>{
+
+    keys[e.code]=true;
+
+    if([
+      "Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"
+    ].includes(e.code)){
+      e.preventDefault();
+    }
+
+    if(e.repeat)return;
+
+    if(e.code==="Space")jump();
+    if(e.code==="KeyE")interactDoor();
+    if(e.code==="KeyF")useStairs();
+    if(e.code==="KeyR")overview();
+  });
+
+  window.addEventListener("keyup",e=>{
+    keys[e.code]=false;
+  });
+
+  window.addEventListener("blur",()=>{
+    Object.keys(keys).forEach(k=>{
+      keys[k]=false;
+    });
+  });
+}
+
+/* ANIMACIÓN */
+
+function animate(){
+
+  schoolFrame=requestAnimationFrame(animate);
+
+  const delta=Math.min(clock.getDelta(),.04);
+
+  if(walkMode){
+    updateWalk(delta);
+  }else{
+    orbit.update();
+  }
+
+  renderer.render(scene,camera);
+}
+
+/* AJUSTE DE PANTALLA */
+
+function resize(){
+
+  if(
+    introRenderer&&
+    introCamera&&
+    $("intro").classList.contains("active")
+  ){
+    introCamera.aspect=innerWidth/innerHeight;
+    introCamera.updateProjectionMatrix();
+    introRenderer.setSize(innerWidth,innerHeight);
+  }
+
+  if(renderer&&camera){
+    camera.aspect=innerWidth/innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(innerWidth,innerHeight);
+
+    renderer.setPixelRatio(
+      Math.min(devicePixelRatio,CONFIG.maxPixelRatio)
+    );
+  }
+}
+
+window.addEventListener("resize",resize);
+
+/* ENTRADA A LA ESCUELA */
+
+$("enterSchool").addEventListener("click",async()=>{
+
+  /* Se detiene el diálogo al entrar al explorador */
+
+  if("speechSynthesis" in window){
+    speechSynthesis.cancel();
+  }
+
+  stopAudio();
+
+  $("town").classList.remove("active");
+  $("explorer").classList.add("active");
+
+  $("loading").style.display="flex";
+
+  if(!initialized){
+    initExplorer();
+  }else{
+    overview();
+    $("loading").style.display="none";
+  }
+
+  /* Solo audio ambiental, sin voz del marcianito */
+
+  const schoolAudio=$("schoolAudio");
+  schoolAudio.loop=true;
+  schoolAudio.volume=.28;
+
+  try{
+    await schoolAudio.play();
+    $("musicButton").textContent="♫ PAUSAR MÚSICA";
+  }catch(error){
+    $("musicButton").textContent="♫ REPRODUCIR MÚSICA";
+    console.warn("El audio requiere interacción del usuario.");
+  }
+});
+
+/* ARRANQUE */
+
+createIntro();
+
+window.addEventListener("beforeunload",()=>{
+  cancelAnimationFrame(introFrame);
+  cancelAnimationFrame(schoolFrame);
+
+  if("speechSynthesis" in window){
+    speechSynthesis.cancel();
+  }
+
+  stopAudio();
+});
+</script>
+</body>
+</html>
